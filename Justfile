@@ -1,4 +1,3 @@
-cat > justfile << 'EOF'
 # === NAFA - Neurodiverse App for Adventurers ===
 # Primary control plane for all development and CI/CD tasks.
 # Uses Oil shell, as requested.
