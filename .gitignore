@@ -1,7 +1,117 @@
-node_modules/
-build/
-.env
+#
+# NAFA Project .gitignore
+#
+
+# --- Generated Configuration ---
+config/
+*.json
+
+# --- CI/CD & Local Caches ---
+.asdf/
+podman-storage/
+
+# --- Elixir / Phoenix ---
+elixir-backend/_build/
+elixir-backend/deps/
+elixir-backend/cover/
+elixir-backend/priv/static/assets/
+erl_crash.dump
+*.log
+
+# --- ReScript / Node ---
+rescript-logic/node_modules/
+rescript-logic/lib/
+rescript-logic/build/
+npm-debug.log
+
+# --- Elm ---
+elm-ui/elm-stuff/
+
+# --- Rust / Tauri ---
+tauri-shell/src-tauri/target/
+tauri-shell/target/
+tauri-shell/build/
+
+# --- Kotlin / Gradle ---
+kotlin-modules/build/
+kotlin-modules/.gradle/
+*.iml
+.idea/
+
+# --- General ---
 .DS_Store
-*.beam
-*.bs.js
-*.class
+*~
+*.swp
+*.swo
+.vscode/
+EOF
+
+# --- .dockerignore ---
+# This tells Podman/Docker what *not* to send to the daemon.
+# This makes builds much faster.
+cat > .dockerignore << 'EOF'
+**/.git
+**/.gitignore
+**/.dockerignore
+**/README.adoc
+**/cookbook.adoc
+**/docs/
+**/.githooks/
+justfile
+*.sls
+
+# Ignore all source code *except* what's needed for the release
+# (elixir-backend, config, and the built assets)
+assets/
+docs/
+elm-ui/
+kotlin-modules/
+nickel-rituals/
+rescript-logic/
+tauri-shell/
+tests/
+
+# We explicitly *un-ignore* the backend and config
+!elixir-backend/
+!config/production.json
+EOF
+
+# --- .editorconfig ---
+cat > .editorconfig << 'EOF'
+#
+# EditorConfig helps maintain consistent coding styles
+#
+root = true
+
+[*]
+indent_style = space
+indent_size = 2
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.{ex,exs}]
+indent_size = 2
+
+[*.{js,res,resi,ts}]
+indent_size = 2
+
+[*.elm]
+indent_size = 4
+
+[*.{kt,kts}]
+indent_size = 4
+
+[*.{rs,toml}]
+indent_size = 4
+
+[*.{ncl,md,adoc}]
+indent_size = 2
+trim_trailing_whitespace = false
+
+[*.json]
+indent_size = 2
+
+[justfile]
+indent_size = 2
