@@ -2,3 +2,6 @@ node_modules/
 build/
 .env
 .DS_Store
+*.beam
+*.bs.js
+*.class
