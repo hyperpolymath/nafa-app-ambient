@@ -1,0 +1,111 @@
+# Create the scripts directory
+mkdir -p scripts
+
+# --- OIL SCRIPT (Primary) ---
+cat > scripts/setup.oil << 'EOF'
+#!/usr/bin/env oil
+#
+# OIL SCRIPT: Setup asdf plugins
+#
+
+echo "OIL SCRIPT: Setting up asdf..."
+
+# List of tools from .tool-versions
+const tools = readln(".tool-versions")
+if (status() != 0) {
+  echo "Error: .tool-versions file not found." >&2
+  exit 1
+}
+
+# Add plugins and install
+for tool, version in (tools) {
+  echo "Checking plugin: $tool"
+  if (! asdf plugin-list | grep -q $tool) {
+    echo "  -> Adding plugin $tool..."
+    asdf plugin-add $tool
+  } else {
+    echo "  -> Plugin $tool already added."
+  }
+  echo "  -> Installing $tool $version..."
+  asdf install $tool $version
+}
+
+echo "asdf setup complete."
+EOF
+
+# --- NUSHELL SCRIPT (Fallback) ---
+cat > scripts/setup.nu << 'EOF'
+#!/usr/bin/env nu
+#
+# NUSHELL SCRIPT: Setup asdf plugins
+#
+
+print "NUSHELL SCRIPT: Setting up asdf..."
+
+let tools = (open .tool-versions | lines | parse "{tool} {version}" | str trim)
+
+let installed_plugins = (asdf plugin-list)
+
+for tool in $tools {
+  print $"Checking plugin: ($tool.tool)"
+  if ($installed_plugins | where $it == $tool.tool | is-empty) {
+    print $"  -> Adding plugin ($tool.tool)..."
+    asdf plugin-add $tool.tool
+  } else {
+    print $"  -> Plugin ($tool.tool) already added."
+  }
+  print $"  -> Installing ($tool.tool) ($tool.version)..."
+  asdf install $tool.tool $tool.version
+}
+
+print "asdf setup complete."
+EOF
+
+# --- BASH SCRIPT (Fallback) ---
+cat > scripts/setup.sh << 'EOF'
+#!/usr/bin/env bash
+#
+# BASH SCRIPT: Setup asdf plugins
+#
+set -e
+
+echo "BASH SCRIPT: Setting up asdf..."
+
+if [ ! -f .tool-versions ]; then
+  echo "Error: .tool-versions file not found." >&2
+  exit 1
+fi
+
+INSTALLED_PLUGINS=$(asdf plugin-list || true)
+
+while read -r line; do
+  # Skip comments and empty lines
+  [[ "$line" =~ ^# ]] || [[ -z "$line" ]] && continue
+
+  TOOL=$(echo "$line" | awk '{print $1}')
+  VERSION=$(echo "$line" | awk '{print $2}')
+
+  echo "Checking plugin: $TOOL"
+  if ! echo "$INSTALLED_PLUGINS" | grep -q "^$TOOL$"; then
+    echo "  -> Adding plugin $TOOL..."
+    asdf plugin-add "$TOOL"
+  else
+    echo "  -> Plugin $TOOL already added."
+  fi
+  echo "  -> Installing $TOOL $VERSION..."
+  asdf install "$TOOL" "$VERSION"
+
+done < .tool-versions
+
+echo "asdf setup complete."
+EOF
+
+# --- .tool-versions file ---
+cat > .tool-versions << 'EOF'
+elixir 1.17.0-otp-27
+erlang 27.1.1
+nodejs 22.5.1
+rust 1.79.0
+elm 0.19.1
+kotlin 2.0.0
+EOF
