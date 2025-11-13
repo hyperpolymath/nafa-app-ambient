@@ -1,4 +1,3 @@
-cat > cookbook.adoc << 'EOF'
 = NAFA Developer Cookbook
 :toc:
 :icons: font
@@ -147,4 +146,3 @@ Common aliases:
 | `just clean:all`
 | Runs `just clean` and then executes the `robot-repo-cleaner` Salt state to perform a deep-system scrub (e.g., pruning Podman images and `asdf` caches).
 |===
-EOF
