@@ -1,5 +1,4 @@
 # --- OIL SCRIPT (Primary) ---
-cat > scripts/setup.oil << 'EOF'
 #!/usr/bin/env oil
 #
 # OIL SCRIPT: Setup asdf plugins
