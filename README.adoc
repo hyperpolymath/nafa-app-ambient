@@ -1,4 +1,3 @@
-cat > README.adoc << 'EOF'
 = NAFA – Neurodiverse App for Adventurers
 :toc:
 
@@ -93,4 +92,3 @@ GitLab:: https://gitlab.com/nafa/ambient-edition
 
 == 🧭 Join the Journey
 NAFA is a living ritual. Every commit, badge, and ambient module is a step toward calmer, more inclusive travel. Join us.
-EOF
