@@ -1,173 +1,61 @@
-NAFA – Neurodiverse App for Adventurers
+cat > README.adoc << 'EOF'
+= NAFA – Neurodiverse App for Adventurers
+:toc:
 
-Table of Contents
-
-🌟 Vision
-🛠️ Tech Stack
-🧬 Contributor Tiers
-🧿 Ambient Extensions
-🧭 Symbolic Splash Graph
-📦 Repo Structure
-🧪 Stretch Goals
-🧠 Licensing & Legacy
-💬 Contact & Community
-🧭 Join the Journey
-
-
-
-
-🌟 Vision
-
-
+== 🌟 Vision
 NAFA is a journey planning app designed to help neurodiverse adventurers navigate public transport and sensory-rich environments with calm, confidence, and symbolic clarity.
-
 
 We encode emotional logic, contributor rituals, and multisensory guarantees into every module—making NAFA not just a tool, but a companion.
 
-
-
-
-
-🛠️ Tech Stack
-
-
-
-
-
-
-
-
-Layer
-Technology
-
-
-
-
-UI
-Elm (calm, predictable, neurodiverse-first)
-
-
-Core Logic
-ReScript (reversible, paradox-excluding)
-
-
-Backend
-Elixir (Phoenix) – real-time routing, badge logic
-
-
-Mobile
-Kotlin Multiplatform – ambient overlays, biometric sensing
-
-
-Splash Host
-Tauri – native desktop splash, no JS runtime
-
-
-Badge Logic
-Nickel Configuration Reporter
-
-
-Routing
-GraphHopper + OpenStreetMap
-
-
-Ambient Media
-Kotlin/Native + OpenAL or AVFoundation
-
-
-
-
-
-
-
-🧬 Contributor Tiers
-
-
-NAFA uses symbolic badge logic to recognize contributors:
-
-
-
-
-
-
-
-
-Tier
-Rituals
-
-
-
-
-Initiate
-First calm journey, first mood log
-
-
-Curator
-Upload ambient track, validate route
-
-
-Guardian
-Test emergency fallback, integrate bioware
-
-
-Companion
-Assist adventurers in sensory-rich zones
-
-
-
-
-
-
-
-🧿 Ambient Extensions
-
-
+== 🛠️ Tech Stack
+
+[cols="1,3", options="header"]
+|===
+|Layer |Technology
+|UI |Elm (calm, predictable, neurodiverse-first)
+|Core Logic |ReScript (reversible, paradox-excluding)
+|Backend |Elixir (Phoenix) – real-time routing, badge logic
+|Mobile |Kotlin Multiplatform – ambient overlays, biometric sensing
+|Splash Host |Tauri – native desktop splash, no JS runtime
+|Badge Logic |Nickel Configuration Reporter
+|Routing |GraphHopper + OpenStreetMap
+|Ambient Media |Kotlin/Native + OpenAL or AVFoundation
+|===
+
+== 🧬 Contributor Tiers
+NAFA uses symbolic badge logic to recognise contributors:
+
+* *Initiate*: First calm journey, first mood log
+* *Curator*: Upload ambient track, validate route
+* *Guardian*: Test emergency fallback, integrate bioware
+* *Companion*: Assist adventurers in sensory-rich zones
+
+== 🧿 Ambient Extensions
 NAFA interoperates with edge devices and multisensory environments:
 
+* Haptic feedback via smart wearables
+* Olfactory cues via scent emitters
+* Visual overlays via AR glasses
+* Biometric sensing via Kotlin modules
+* Smart clothing via textile sensors
+* BLE/UWB anchors for calm zone detection
 
+== 🧭 Symbolic Splash Graph
 
-
-Haptic feedback via smart wearables
-
-
-Olfactory cues via scent emitters
-
-
-Visual overlays via AR glasses
-
-
-Biometric sensing via Kotlin modules
-
-
-Smart clothing via textile sensors
-
-
-BLE/UWB anchors for calm zone detection
-
-
-
-
-
-
-
-🧭 Symbolic Splash Graph
-
-
-
-
+[literal]
+----
 node "Mood Input" --> "Preferences"
 node "Preferences" --> "Route Planner"
 node "Route Planner" --> "Ambient Overlay"
 node "Ambient Overlay" --> "Journey Outcome"
 node "Journey Outcome" --> "Badge Tier"
 node "Badge Tier" --> "Companion Tier"
+----
 
+== 📦 Repo Structure
 
-📦 Repo Structure
-
-
-
-
+[literal]
+----
 nafa-app-ambient/
 ├── elm-ui/
 ├── rescript-logic/
@@ -185,65 +73,24 @@ nafa-app-ambient/
 │   └── scent/
 ├── docs/
 ├── tests/
+----
 
+== 🧪 Stretch Goals
+* Multi-user accounts
+* Street-level overlays
+* Bioware integration
+* Third-party app bridges
+* Companion-tier recognition via symbolic badges
 
-🧪 Stretch Goals
-
-
-
-
-Multi-user accounts
-
-
-Street-level overlays
-
-
-Bioware integration
-
-
-Third-party app bridges
-
-
-Companion-tier recognition via symbolic badges
-
-
-
-
-
-
-
-🧠 Licensing & Legacy
-
-
+== 🧠 Licensing & Legacy
 NAFA is released under the AGPL-3.0 license. All symbolic logic, badge transitions, and ambient overlays are designed to be narratable, reversible, and audit-grade.
 
+== 💬 Contact & Community
+Email:: nafa.app@gmail.com
+Instagram:: @nafa_app
+Twitter:: @nafa_travel
+GitLab:: https://gitlab.com/nafa/ambient-edition
 
-
-
-
-💬 Contact & Community
-
-
-
-
-Email: nafa.app@gmail.com
-
-
-Instagram: @nafa_app
-
-
-Twitter: @nafa_travel
-
-
-GitLab: https://gitlab.com/nafa/ambient-edition
-
-
-
-
-
-
-
-🧭 Join the Journey
-
-
+== 🧭 Join the Journey
 NAFA is a living ritual. Every commit, badge, and ambient module is a step toward calmer, more inclusive travel. Join us.
+EOF
