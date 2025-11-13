@@ -1,5 +1,4 @@
 # --- NUSHELL SCRIPT (Fallback) ---
-cat > scripts/setup.nu << 'EOF'
 #!/usr/bin/env nu
 #
 # NUSHELL SCRIPT: Setup asdf plugins
