@@ -1,4 +1,3 @@
-cat > elm-ui/src/Ports.elm << 'EOF'
 port module Ports exposing
     ( Msg(..)
     , fromPorts
@@ -116,4 +115,3 @@ decodeMsg =
                     _ ->
                         Decode.fail ("Unknown port message type: " ++ tag)
             )
-EOF
