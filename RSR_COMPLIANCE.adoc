@@ -13,10 +13,10 @@ This document describes the Rhodium Standard Repository (RSR) compliance status 
 |Attribute |Value
 
 |Project |nafa-app-ambient
-|Primary Language |unknown
-|RSR Tier |N/A
-|Compliance Status |Review Needed
-|Last Updated |2025-12-10
+|Primary Language |Elm (frontend), Elixir (backend)
+|RSR Tier |Tier 1
+|Compliance Status |Gold Target
+|Last Updated |2025-12-17
 |===
 
 == Language Tier Classification
@@ -46,24 +46,28 @@ This document describes the Rhodium Standard Repository (RSR) compliance status 
 |===
 |Requirement |Status |Notes
 
-|Primary language is Tier 1/2 |✓ |unknown
-|No restricted languages outside exemptions |✓ |
-|.editorconfig present |✓ |
-|.well-known/ directory |✓ |
-|justfile present |✗ |
-|LICENSE.txt (AGPL + Palimpsest) |✓ |
-|Containerfile present |✓ |
-|flake.nix present |✗ |
+|Primary language is Tier 1/2 |✓ |Elm, Elixir (Tier 1)
+|No restricted languages outside exemptions |✓ |SaltStack Python in salt/ only
+|.editorconfig present |✓ |2-space indent, UTF-8
+|.well-known/ directory |✓ |RFC 9116 compliant
+|justfile present |✓ |Build/dev commands defined
+|LICENSE.txt (MIT OR AGPL + Palimpsest) |✓ |Dual license
+|Containerfile present |✓ |Multi-stage Podman build
+|flake.nix present |✓ |Nix fallback (Guix primary)
+|guix.scm present |✓ |Primary package definition
+|SHA-pinned GitHub Actions |✓ |All workflows pinned
+|SPDX headers on source files |✓ |MIT OR AGPL-3.0-or-later
 |===
 
 == Exemptions
 
-None
+* SaltStack: Python allowed in `salt/` directories per RSR language policy
 
 == Action Items
 
-* Add justfile
-* Add flake.nix
+* Complete Elixir backend implementation
+* Add comprehensive test suite
+* Implement core journey planning features
 
 == References
 

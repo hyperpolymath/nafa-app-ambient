@@ -1,3 +1,5 @@
+;; SPDX-License-Identifier: MIT OR AGPL-3.0-or-later
+;; SPDX-FileCopyrightText: 2024-2025 hyperpolymath
 ;; nafa-app-ambient - Guix Package Definition
 ;; Run: guix shell -D -f guix.scm
 
@@ -16,10 +18,13 @@
                         #:recursive? #t
                         #:select? (git-predicate ".")))
     (build-system gnu-build-system)
-    (synopsis "Guix channel/infrastructure")
-    (description "Guix channel/infrastructure - part of the RSR ecosystem.")
+    (synopsis "Journey planning app for neurodiverse adventurers")
+    (description "NAFA (Neurodiverse App for Adventurers) is a journey planning
+app designed to help neurodiverse adventurers navigate public transport and
+sensory-rich environments with calm, confidence, and symbolic clarity.")
     (home-page "https://github.com/hyperpolymath/nafa-app-ambient")
-    (license license:agpl3+)))
+    ;; Dual licensed: user chooses MIT or AGPL-3.0+
+    (license (list license:expat license:agpl3+))))
 
 ;; Return package for guix shell
 nafa_app_ambient

@@ -1,4 +1,3 @@
-cat > elm-ui/src/Types.elm << 'EOF'
 module Types exposing (..)
 
 import Json.Decode as Decode
@@ -86,4 +85,3 @@ decodeRouteSegment =
         (Decode.field "description" Decode.string)
         (Decode.field "sensory_warning" (Decode.maybe Decode.string))
         (Decode.field "duration_minutes" Decode.int)
-EOF
