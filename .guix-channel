@@ -1,7 +1,0 @@
-;; nafa-app-ambient - Guix Channel
-;; Add to ~/.config/guix/channels.scm
-
-(channel
- (version 0)
- (url "https://github.com/hyperpolymath/nafa-app-ambient")
- (branch "main"))
