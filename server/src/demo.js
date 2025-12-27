@@ -4,8 +4,11 @@
 /**
  * NAFA MVP CLI Demo
  *
- * Runs the full journey + annotation flow in the terminal
- * to demonstrate the MVP functionality without needing a browser.
+ * Demonstrates the full MVP including:
+ * - Journey planning with sensory-aware segments
+ * - Sensory annotation flow
+ * - Accessibility settings
+ * - Offline mode management
  */
 
 // Domain helpers (matching ReScript types)
@@ -30,6 +33,8 @@ const renderSensoryLevel = (label, level) => {
   const empty = "░".repeat(10 - level);
   return `${label}: ${filled}${empty} (${level}/10 - ${sensoryLevelDescription(level)})`;
 };
+
+const toggleState = (on) => (on ? "[X]" : "[ ]");
 
 // Sample journey data
 const journey = {
@@ -80,16 +85,49 @@ const journey = {
   ],
 };
 
+// Accessibility preferences (matching ReScript types)
+const accessibilityPrefs = {
+  textSize: "Large",
+  contrastMode: "HighContrast",
+  motionPreference: "Reduced",
+  screenReaderVerbosity: "Standard",
+  hapticFeedback: "Standard",
+  reduceTransparency: false,
+  boldText: true,
+  monoAudio: false,
+};
+
+// Offline mode state (matching ReScript types)
+const offlineState = {
+  connectivity: "Online",
+  prefs: {
+    enableOfflineMode: true,
+    autoSync: true,
+    syncOnWifiOnly: false,
+    maxCacheAgeDays: 7,
+    prefetchUpcomingJourneys: true,
+  },
+  stats: {
+    journeysCached: 3,
+    annotationsCached: 12,
+    pendingUploads: 0,
+    lastSyncAt: Date.now() - 3600000,
+    storageBytesUsed: 256000,
+  },
+};
+
 // Demo flow
 console.log(`
 ╔══════════════════════════════════════════════════════════════╗
-║              NAFA MVP DEMO - Journey + Annotations           ║
+║              NAFA MVP DEMO - Full Feature Set                ║
 ║     Neurodiverse App for Adventurers                         ║
 ╚══════════════════════════════════════════════════════════════╝
 
-This demo shows the two core MVP features:
-  1. Journey Plan View - with sensory-aware route segments
+This demo shows all MVP features:
+  1. Journey Plan View - sensory-aware route segments
   2. Sensory Annotation Flow - crowdsourced location data
+  3. Accessibility Settings - customizable display & interaction
+  4. Offline Mode - works without internet connection
 
 ═══════════════════════════════════════════════════════════════
 
@@ -194,6 +232,68 @@ async function runDemo() {
   console.log("Your annotation helps other neurodiverse travelers");
   console.log("prepare for their journeys.\n");
 
+  await wait(300);
+
+  // Step 3: Accessibility Settings
+  console.log("\n═══════════════════════════════════════════════════════════════");
+  console.log("♿ STEP 3: Accessibility Settings\n");
+  console.log("Customize NAFA for your needs...\n");
+
+  console.log("════════════════════════════════════════════════════════════════");
+  console.log("  ACCESSIBILITY SETTINGS");
+  console.log("════════════════════════════════════════════════════════════════\n");
+
+  console.log("VISION");
+  console.log("────────────────────────────────────────");
+  console.log(`  Text Size:    ${accessibilityPrefs.textSize} (125%)`);
+  console.log(`  Contrast:     ${accessibilityPrefs.contrastMode}`);
+  console.log(`  ${toggleState(accessibilityPrefs.boldText)} Bold Text`);
+  console.log(`  ${toggleState(accessibilityPrefs.reduceTransparency)} Reduce Transparency\n`);
+
+  console.log("MOTION & HAPTICS");
+  console.log("────────────────────────────────────────");
+  console.log(`  Motion:       ${accessibilityPrefs.motionPreference}`);
+  console.log(`  Haptics:      ${accessibilityPrefs.hapticFeedback}\n`);
+
+  console.log("AUDIO & SCREEN READER");
+  console.log("────────────────────────────────────────");
+  console.log(`  Verbosity:    ${accessibilityPrefs.screenReaderVerbosity}`);
+  console.log(`  ${toggleState(accessibilityPrefs.monoAudio)} Mono Audio\n`);
+
+  await wait(300);
+
+  // Step 4: Offline Mode
+  console.log("\n═══════════════════════════════════════════════════════════════");
+  console.log("📴 STEP 4: Offline Mode\n");
+  console.log("Access journeys without internet...\n");
+
+  console.log("════════════════════════════════════════════════════════════════");
+  console.log("  OFFLINE MODE & SYNC");
+  console.log("════════════════════════════════════════════════════════════════\n");
+
+  console.log(`Status: ● ${offlineState.connectivity}\n`);
+
+  console.log("CACHED DATA");
+  console.log("────────────────────────────────────────");
+  console.log(`  Journeys cached:     ${offlineState.stats.journeysCached}`);
+  console.log(`  Annotations cached:  ${offlineState.stats.annotationsCached}`);
+  console.log(`  Storage used:        ${(offlineState.stats.storageBytesUsed / 1024).toFixed(1)} KB`);
+  console.log(`  Last synced:         1 hour ago\n`);
+
+  console.log("SETTINGS");
+  console.log("────────────────────────────────────────");
+  console.log(`  ${toggleState(offlineState.prefs.enableOfflineMode)} Enable Offline Mode`);
+  console.log(`  ${toggleState(offlineState.prefs.autoSync)} Auto-Sync`);
+  console.log(`  ${toggleState(offlineState.prefs.syncOnWifiOnly)} WiFi-Only Sync`);
+  console.log(`  ${toggleState(offlineState.prefs.prefetchUpcomingJourneys)} Prefetch Journeys`);
+  console.log(`  Cache Duration: ${offlineState.prefs.maxCacheAgeDays} days\n`);
+
+  // Simulate going offline
+  console.log("[Simulating offline mode...]\n");
+  console.log("Status: ○ Offline - using cached data\n");
+  console.log("  ℹ️  Journey data available from cache");
+  console.log("  ℹ️  Annotations will sync when back online\n");
+
   // Summary
   console.log("\n═══════════════════════════════════════════════════════════════");
   console.log("MVP DEMO COMPLETE");
@@ -201,6 +301,8 @@ async function runDemo() {
   console.log("The NAFA MVP demonstrates:");
   console.log("  ✓ Journey planning with sensory-aware route segments");
   console.log("  ✓ Sensory annotation collection for locations");
+  console.log("  ✓ Accessibility settings for neurodiverse users");
+  console.log("  ✓ Offline mode for reliable access anywhere");
   console.log("  ✓ TEA (The Elm Architecture) pattern in ReScript");
   console.log("  ✓ Deno server with REST API\n");
   console.log("Run commands:");

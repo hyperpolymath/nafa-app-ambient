@@ -7,6 +7,8 @@ type t =
   | JourneyView(string)
   | JourneyList
   | Annotate(string)
+  | Accessibility
+  | Offline
   | NotFound
 
 /// Parse URL path to route
@@ -21,6 +23,8 @@ let fromPath = (path: string): t => {
   | ["journeys"] => JourneyList
   | ["journey", id] => JourneyView(id)
   | ["annotate", locationId] => Annotate(locationId)
+  | ["accessibility"] => Accessibility
+  | ["offline"] => Offline
   | _ => NotFound
   }
 }
@@ -32,6 +36,8 @@ let toPath = (route: t): string => {
   | JourneyList => "/journeys"
   | JourneyView(id) => "/journey/" ++ id
   | Annotate(locationId) => "/annotate/" ++ locationId
+  | Accessibility => "/accessibility"
+  | Offline => "/offline"
   | NotFound => "/404"
   }
 }
