@@ -58,9 +58,46 @@ badge tier:
 tier contributor name:
     nickel run nickel-rituals/tier.ncl --contributor $(name)
 
+# MVP Commands
+mvp-demo:
+    @if command -v deno >/dev/null 2>&1; then \
+        cd server && deno task demo; \
+    else \
+        node server/src/demo-node.js; \
+    fi
+
+mvp-server:
+    @if command -v deno >/dev/null 2>&1; then \
+        cd server && deno task start; \
+    else \
+        echo "Deno required for server. Install: https://deno.land"; \
+    fi
+
+mvp-dev:
+    @if command -v deno >/dev/null 2>&1; then \
+        cd server && deno task dev; \
+    else \
+        echo "Deno required for dev server. Install: https://deno.land"; \
+    fi
+
+mvp-build:
+    @if [ -d shared/node_modules ]; then \
+        cd shared && npx rescript build; \
+        cd ../client && npx rescript build; \
+    else \
+        echo "Run 'npm install' in shared/ and client/ first"; \
+    fi
+
+mvp-check:
+    @if command -v deno >/dev/null 2>&1; then \
+        deno check server/src/main.js server/src/demo.js; \
+    else \
+        node --check server/src/demo-node.js; \
+    fi
+
 # Docs & Help
 man:
     echo "NAFA Ambient Edition Manual: Routing, Overlays, Emergency, Splash, Rituals"
 
 help:
-    echo "Available commands: init, config, env, route calm, route avoid, route multi, overlay scent/haptic/visual, panic, reroute, contact, splash trigger/preview/graph, badge, tier, man, help"
+    echo "Available commands: init, config, env, route calm, route avoid, route multi, overlay scent/haptic/visual, panic, reroute, contact, splash trigger/preview/graph, badge, tier, mvp-demo, mvp-server, mvp-dev, mvp-build, man, help"
