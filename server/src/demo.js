@@ -203,10 +203,10 @@ async function runDemo() {
   console.log("  ✓ Sensory annotation collection for locations");
   console.log("  ✓ TEA (The Elm Architecture) pattern in ReScript");
   console.log("  ✓ Deno server with REST API\n");
-  console.log("Next steps:");
-  console.log("  - Run server: deno task start");
-  console.log("  - Build ReScript: npx rescript build");
-  console.log("  - Add real routing API integration\n");
+  console.log("Run commands:");
+  console.log("  just mvp-demo      - Run this demo");
+  console.log("  just mvp-server    - Start the API server");
+  console.log("  just mvp-build     - Build ReScript modules\n");
 }
 
 runDemo();
