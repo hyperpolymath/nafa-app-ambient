@@ -4,8 +4,35 @@
 
 Migrate nafa-app-ambient from Elm to a ReScript-first architecture using:
 - **rescript-tea** for client-side TEA architecture
-- **cadre-router** for server-side API routing
+- **cadre-router** for typed client-side URL parsing (Parser, Navigation, Link)
+- **cadre-tea-router** for TEA integration (TeaRouter.Make functor)
 - **Shared types** for compile-time guarantees across the stack
+
+## Dependency Stack
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        nafa-app-ambient                         │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────────┐    ┌──────────────────┐    ┌────────────────┐ │
+│  │ rescript-tea│◄───│ cadre-tea-router │◄───│  cadre-router  │ │
+│  │             │    │                  │    │                │ │
+│  │ TEA loop    │    │ TeaRouter.Make   │    │ Parser (s,str) │ │
+│  │ Cmd/Sub     │    │ Tea.Cmd.t        │    │ Navigation     │ │
+│  │ Html/View   │    │ Tea.Sub.t        │    │ Link.Make      │ │
+│  └─────────────┘    └──────────────────┘    └────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## Repository Locations
+
+| Package | Location | Status |
+|---------|----------|--------|
+| cadre-router | `hyperpolymath/cadre-router` (branch `claude/type-safe-routing-SPtP7`) | Client-side routing |
+| cadre-tea-router | Needs GitHub repo | TEA integration layer |
+| Server-side routing | Future work (Stage 3 in roadmap) | Not implemented |
 
 ## Phase 1: Monorepo Structure
 
@@ -132,6 +159,8 @@ and journeyStatus =
 ```rescript
 // SPDX-License-Identifier: Apache-2.0
 
+// Route type and cadre-router parser integration
+
 type t =
   | Home
   | MoodInput
@@ -139,6 +168,18 @@ type t =
   | Journey(string)  // journey ID
   | Profile
   | NotFound
+
+// Elm-style parser using cadre-router combinators
+let parser = {
+  open CadreRouter.Parser
+  oneOf([
+    map(Home, top),
+    map(MoodInput, s("mood")),
+    map(RoutePlanner, s("plan")),
+    map(id => Journey(id), s("journey") </> str),
+    map(Profile, s("profile")),
+  ])
+}
 
 let toString = (route: t): string => {
   switch route {
@@ -150,6 +191,12 @@ let toString = (route: t): string => {
   | NotFound => "/404"
   }
 }
+
+// Type-safe Link component for this route type
+module Link = CadreRouter.Link.Make({
+  type t = t
+  let toString = toString
+})
 ```
 
 **shared/src/Api.res**
@@ -209,53 +256,62 @@ module Profile = {
     "in-source": true
   }],
   "suffix": ".res.js",
-  "bs-dependencies": ["rescript-tea", "@rescript/react"],
+  "bs-dependencies": [
+    "rescript-tea",
+    "cadre-router",
+    "cadre-tea-router",
+    "@rescript/react"
+  ],
   "jsx": {"version": 4, "mode": "automatic"},
   "warnings": {"number": "-44"}
 }
 ```
 
-**client/src/Routing.res**
+**client/src/Router.res** (replaces hand-rolled Routing.res)
 ```rescript
 // SPDX-License-Identifier: Apache-2.0
 
-// Client-side route parsing from tea_navigation Location
+// TeaRouter integration using cadre-tea-router functor
 
-let fromLocation = (loc: Tea_navigation.Location.t): Route.t => {
-  let path = loc.pathname
+module Router = TeaRouter.Make({
+  type route = Route.t
+  type msg = Msg.t
 
-  // Handle trailing slashes
-  let normalized = switch Js.String2.endsWith(path, "/") && path !== "/" {
-  | true => Js.String2.slice(path, ~from=0, ~to_=Js.String2.length(path) - 1)
-  | false => path
-  }
+  let parser = Route.parser        // cadre-router Parser
+  let toString = Route.toString
 
-  switch normalized {
-  | "/" | "" => Route.Home
-  | "/mood" => Route.MoodInput
-  | "/plan" => Route.RoutePlanner
-  | "/profile" => Route.Profile
-  | _ =>
-    // Check for /journey/:id pattern
-    let segments = Js.String2.split(normalized, "/")
-    switch segments {
-    | ["", "journey", id] if id !== "" => Route.Journey(id)
-    | _ => Route.NotFound
-    }
-  }
-}
+  let onRouteChange = route => Msg.RouteChanged(route)
+  let onNotFound = url => Msg.UrlNotFound(url)
+})
 
-// Generate navigation command
-let navigate = (route: Route.t): Tea.Cmd.t<'msg> => {
-  Tea_navigation.newUrl(Route.toString(route))
-}
+// Re-export for convenience
+let init = Router.init
+let update = Router.update
+let subscriptions = Router.subscriptions
+let navigate = Router.navigate
+let link = Router.link
+```
+
+**client/src/Msg.res** (message types)
+```rescript
+// SPDX-License-Identifier: Apache-2.0
+
+type t =
+  | RouteChanged(Route.t)
+  | UrlNotFound(CadreRouter.Url.t)
+  | MoodInputMsg(PageMoodInput.msg)
+  | RoutePlannerMsg(PageRoutePlanner.msg)
+  | JourneyMsg(PageJourney.msg)
+  | ProfileMsg(PageProfile.msg)
+  | SessionLoaded(Domain.session)
+  | ApiError(string)
 ```
 
 **client/src/Main.res**
 ```rescript
 // SPDX-License-Identifier: Apache-2.0
 
-// Main application entry point using rescript-tea
+// Main application using rescript-tea + cadre-tea-router
 
 type page =
   | NotFoundPage(PageNotFound.model)
@@ -270,40 +326,31 @@ type model = {
   session: option<Domain.session>,
 }
 
-type msg =
-  | UrlChanged(Tea_navigation.Location.t)
-  | MoodInputMsg(PageMoodInput.msg)
-  | RoutePlannerMsg(PageRoutePlanner.msg)
-  | JourneyMsg(PageJourney.msg)
-  | ProfileMsg(PageProfile.msg)
-  | SessionLoaded(Domain.session)
-  | ApiError(string)
-
-let initPage = (route: Route.t, session: option<Domain.session>): (page, Tea.Cmd.t<msg>) => {
+let initPage = (route: Route.t, session: option<Domain.session>): (page, Tea.Cmd.t<Msg.t>) => {
   switch route {
   | Route.Home | Route.MoodInput =>
     let (model, cmd) = PageMoodInput.init()
-    (MoodInputPage(model), Tea.Cmd.map(msg => MoodInputMsg(msg), cmd))
+    (MoodInputPage(model), Tea.Cmd.map(msg => Msg.MoodInputMsg(msg), cmd))
 
   | Route.RoutePlanner =>
     let (model, cmd) = PageRoutePlanner.init()
-    (RoutePlannerPage(model), Tea.Cmd.map(msg => RoutePlannerMsg(msg), cmd))
+    (RoutePlannerPage(model), Tea.Cmd.map(msg => Msg.RoutePlannerMsg(msg), cmd))
 
   | Route.Journey(id) =>
     let (model, cmd) = PageJourney.init(id, session)
-    (JourneyPage(model), Tea.Cmd.map(msg => JourneyMsg(msg), cmd))
+    (JourneyPage(model), Tea.Cmd.map(msg => Msg.JourneyMsg(msg), cmd))
 
   | Route.Profile =>
     let (model, cmd) = PageProfile.init(session)
-    (ProfilePage(model), Tea.Cmd.map(msg => ProfileMsg(msg), cmd))
+    (ProfilePage(model), Tea.Cmd.map(msg => Msg.ProfileMsg(msg), cmd))
 
   | Route.NotFound =>
     (NotFoundPage(PageNotFound.init()), Tea.Cmd.none)
   }
 }
 
-let init = (location: Tea_navigation.Location.t): (model, Tea.Cmd.t<msg>) => {
-  let route = Routing.fromLocation(location)
+let init = (): (model, Tea.Cmd.t<Msg.t>) => {
+  // Router handles initial URL parsing via subscriptions
   let mockSession = Some({
     Domain.user: {
       id: "user-123",
@@ -313,148 +360,139 @@ let init = (location: Tea_navigation.Location.t): (model, Tea.Cmd.t<msg>) => {
     token: "mock-token",
   })
 
-  let (page, pageCmd) = initPage(route, mockSession)
-
-  ({route, page, session: mockSession}, pageCmd)
+  let (page, pageCmd) = initPage(Route.Home, mockSession)
+  ({route: Route.Home, page, session: mockSession}, pageCmd)
 }
 
-let update = (msg: msg, model: model): (model, Tea.Cmd.t<msg>) => {
+let update = (msg: Msg.t, model: model): (model, Tea.Cmd.t<Msg.t>) => {
   switch msg {
-  | UrlChanged(location) =>
-    let route = Routing.fromLocation(location)
+  | Msg.RouteChanged(route) =>
     let (page, cmd) = initPage(route, model.session)
     ({...model, route, page}, cmd)
 
-  | MoodInputMsg(pageMsg) =>
+  | Msg.UrlNotFound(_url) =>
+    let (page, cmd) = initPage(Route.NotFound, model.session)
+    ({...model, route: Route.NotFound, page}, cmd)
+
+  | Msg.MoodInputMsg(pageMsg) =>
     switch model.page {
     | MoodInputPage(pageModel) =>
       let (newModel, cmd) = PageMoodInput.update(pageMsg, pageModel)
-      ({...model, page: MoodInputPage(newModel)}, Tea.Cmd.map(m => MoodInputMsg(m), cmd))
+      ({...model, page: MoodInputPage(newModel)}, Tea.Cmd.map(m => Msg.MoodInputMsg(m), cmd))
     | _ => (model, Tea.Cmd.none)
     }
 
-  | RoutePlannerMsg(pageMsg) =>
+  | Msg.RoutePlannerMsg(pageMsg) =>
     switch model.page {
     | RoutePlannerPage(pageModel) =>
       let (newModel, cmd) = PageRoutePlanner.update(pageMsg, pageModel)
-      ({...model, page: RoutePlannerPage(newModel)}, Tea.Cmd.map(m => RoutePlannerMsg(m), cmd))
+      ({...model, page: RoutePlannerPage(newModel)}, Tea.Cmd.map(m => Msg.RoutePlannerMsg(m), cmd))
     | _ => (model, Tea.Cmd.none)
     }
 
-  | JourneyMsg(pageMsg) =>
+  | Msg.JourneyMsg(pageMsg) =>
     switch model.page {
     | JourneyPage(pageModel) =>
       let (newModel, cmd) = PageJourney.update(pageMsg, pageModel)
-      ({...model, page: JourneyPage(newModel)}, Tea.Cmd.map(m => JourneyMsg(m), cmd))
+      ({...model, page: JourneyPage(newModel)}, Tea.Cmd.map(m => Msg.JourneyMsg(m), cmd))
     | _ => (model, Tea.Cmd.none)
     }
 
-  | ProfileMsg(pageMsg) =>
+  | Msg.ProfileMsg(pageMsg) =>
     switch model.page {
     | ProfilePage(pageModel) =>
       let (newModel, cmd) = PageProfile.update(pageMsg, pageModel)
-      ({...model, page: ProfilePage(newModel)}, Tea.Cmd.map(m => ProfileMsg(m), cmd))
+      ({...model, page: ProfilePage(newModel)}, Tea.Cmd.map(m => Msg.ProfileMsg(m), cmd))
     | _ => (model, Tea.Cmd.none)
     }
 
-  | SessionLoaded(session) =>
+  | Msg.SessionLoaded(session) =>
     ({...model, session: Some(session)}, Tea.Cmd.none)
 
-  | ApiError(_) =>
-    // TODO: handle errors
+  | Msg.ApiError(_) =>
     (model, Tea.Cmd.none)
   }
 }
 
-let view = (model: model): Tea.Html.t<msg> => {
-  // Delegate to page views
-  switch model.page {
+let view = (model: model): Tea.Html.t<Msg.t> => {
+  open Tea.Html
+
+  let pageView = switch model.page {
   | NotFoundPage(m) => PageNotFound.view(m)
-  | MoodInputPage(m) => Tea.Html.map(msg => MoodInputMsg(msg), PageMoodInput.view(m))
-  | RoutePlannerPage(m) => Tea.Html.map(msg => RoutePlannerMsg(msg), PageRoutePlanner.view(m))
-  | JourneyPage(m) => Tea.Html.map(msg => JourneyMsg(msg), PageJourney.view(m))
-  | ProfilePage(m) => Tea.Html.map(msg => ProfileMsg(msg), PageProfile.view(m))
+  | MoodInputPage(m) => Tea.Html.map(msg => Msg.MoodInputMsg(msg), PageMoodInput.view(m))
+  | RoutePlannerPage(m) => Tea.Html.map(msg => Msg.RoutePlannerMsg(msg), PageRoutePlanner.view(m))
+  | JourneyPage(m) => Tea.Html.map(msg => Msg.JourneyMsg(msg), PageJourney.view(m))
+  | ProfilePage(m) => Tea.Html.map(msg => Msg.ProfileMsg(msg), PageProfile.view(m))
   }
+
+  div([class'("app")], [
+    // Navigation using type-safe links
+    nav([class'("nav")], [
+      Route.Link.make(~route=Route.MoodInput, ~children=[text("Mood")], ()),
+      Route.Link.make(~route=Route.RoutePlanner, ~children=[text("Plan")], ()),
+      Route.Link.make(~route=Route.Profile, ~children=[text("Profile")], ()),
+    ]),
+    main([], [pageView]),
+  ])
 }
 
-let subscriptions = (model: model): Tea.Sub.t<msg> => {
-  switch model.page {
-  | JourneyPage(m) => Tea.Sub.map(msg => JourneyMsg(msg), PageJourney.subscriptions(m))
-  | _ => Tea.Sub.none
-  }
+let subscriptions = (model: model): Tea.Sub.t<Msg.t> => {
+  Tea.Sub.batch([
+    // Router subscription for URL changes
+    Router.subscriptions,
+
+    // Page-specific subscriptions
+    switch model.page {
+    | JourneyPage(m) => Tea.Sub.map(msg => Msg.JourneyMsg(msg), PageJourney.subscriptions(m))
+    | _ => Tea.Sub.none
+    },
+  ])
 }
 
 // Application entry point
-let main = Tea_navigation.navigationProgram(
-  location => UrlChanged(location),
-  {
-    init: init,
-    update: update,
-    view: view,
-    subscriptions: subscriptions,
-    shutdown: _ => Tea.Cmd.none,
-  },
-)
+let main = Tea.App.program({
+  init: init,
+  update: update,
+  view: view,
+  subscriptions: subscriptions,
+})
 ```
 
-### Step 4: Server Setup (server/)
+### Step 4: Server Setup (server/) — FUTURE WORK
 
-**server/deno.json**
+> **Note**: Server-side cadre-router is Stage 3 in the roadmap. For Phase 1, use a
+> simple Deno HTTP server or Gleam backend. The typed server-side routing with
+> middleware and CRDT state will come later.
+
+**server/deno.json** (minimal for now)
 ```json
 {
   "name": "nafa-server",
   "version": "0.1.0",
   "tasks": {
-    "dev": "deno run --watch --allow-net --allow-read src/Main.res.js",
-    "build": "rescript build",
-    "start": "deno run --allow-net --allow-read src/Main.res.js"
-  },
-  "imports": {
-    "cadre-router": "jsr:@hyperpolymath/cadre-router@^0.1"
+    "dev": "deno run --watch --allow-net --allow-read src/main.ts",
+    "start": "deno run --allow-net --allow-read src/main.ts"
   }
 }
 ```
 
-**server/rescript.json**
-```json
-{
-  "name": "nafa-server",
-  "sources": [
-    {"dir": "src", "subdirs": true},
-    {"dir": "../shared/src", "subdirs": true}
-  ],
-  "package-specs": [{
-    "module": "es6",
-    "in-source": true
-  }],
-  "suffix": ".res.js"
-}
-```
-
-**server/src/Main.res**
-```rescript
+**server/src/main.ts** (placeholder until server-side cadre-router exists)
+```typescript
 // SPDX-License-Identifier: Apache-2.0
+// Temporary: Simple Deno server until cadre-router server-side is ready
 
-// Server entry point using cadre-router
+const handler = (request: Request): Response => {
+  const url = new URL(request.url);
 
-// Note: This is a scaffold - actual implementation depends on
-// cadre-router's current API surface
+  // Basic API routing
+  if (url.pathname.startsWith("/api/")) {
+    return Response.json({ status: "ok" });
+  }
 
-module Router = {
-  // Placeholder for cadre-router integration
-  // Actual binding depends on cadre-router exports
-}
+  return new Response("NAFA API", { status: 200 });
+};
 
-let port = 8000
-
-let handler = (request: Request.t): Promise.t<Response.t> => {
-  // Route matching and handler dispatch
-  // This will use cadre-router's typed routing
-  Promise.resolve(Response.make("NAFA API"))
-}
-
-// Server startup
-Deno.serve({port: port}, handler)
+Deno.serve({ port: 8000 }, handler);
 ```
 
 ### Step 5: Page Module Template
@@ -576,8 +614,15 @@ rs-clean:
 ### Client Migration
 - [ ] Port Domain types from Types.elm → shared/src/Domain.res
 - [ ] Port Route type from Routing.elm → shared/src/Route.res
-- [ ] Implement Routing.res with fromLocation parser
-- [ ] Implement Main.res with navigationProgram
+  - [ ] Add `parser` using cadre-router combinators (`s`, `str`, `</>`, `oneOf`)
+  - [ ] Add `toString` for serialization
+  - [ ] Add `module Link = CadreRouter.Link.Make(...)` for type-safe links
+- [ ] Create client/src/Msg.res with message type
+- [ ] Create client/src/Router.res using `TeaRouter.Make` functor
+- [ ] Implement Main.res with:
+  - [ ] `Router.urlChanges` in subscriptions
+  - [ ] `Router.push` for navigation commands
+  - [ ] `Router.link` or `Route.Link.make` for links in view
 - [ ] Port each Page module:
   - [ ] Page/MoodInput.res
   - [ ] Page/RoutePlanner.res
@@ -586,11 +631,11 @@ rs-clean:
   - [ ] Page/NotFound.res
 - [ ] Port Ports.elm → client/src/Ports.res
 
-### Server Setup
-- [ ] Create cadre-router bindings (or import if published)
-- [ ] Implement API routes matching client expectations
-- [ ] Set up middleware (auth, session)
+### Server Setup (Phase 1 — Minimal)
+- [ ] Create basic Deno HTTP server (placeholder)
+- [ ] Implement minimal API endpoints
 - [ ] Configure CORS for local development
+- [ ] (Future) Server-side cadre-router when Stage 3 is ready
 
 ### Integration
 - [ ] Client fetches from server API
@@ -622,16 +667,28 @@ cd server
 
 ---
 
+## Resolved Questions
+
+1. **Routing Architecture**: Using `cadre-tea-router` functor pattern
+   - Define `parser` and `toString` once
+   - Get `Router.push`, `Router.urlChanges`, `Router.link` — all type-safe
+
+2. **cadre-router Location**: `hyperpolymath/cadre-router` branch `claude/type-safe-routing-SPtP7`
+   - Client-side only (Parser, Navigation, Link)
+   - Server-side is Stage 3 future work
+
+3. **cadre-tea-router**: Needs GitHub repo (currently local only)
+   - Provides `TeaRouter.Make` functor
+   - Bridges cadre-router ↔ rescript-tea
+
 ## Open Questions
 
-1. **UI Library**: rescript-tea uses virtual DOM. Do we want:
-   - Pure Tea.Html (like elm-html)
-   - React integration for richer components
-   - Hybrid approach
+1. **UI Library**: rescript-tea uses virtual DOM. Options:
+   - Pure `Tea.Html` (like elm-html) — simpler, lighter
+   - React via `@rescript/react` — richer ecosystem
+   - Hybrid: Tea.Html for pages, React for complex components
 
-2. **cadre-router Publishing**: Is cadre-router on JSR/npm, or should we vendor it?
-
-3. **CRDT State**: Do we want to use cadre-router's distributed state for real-time features (journey collaboration)?
+2. **cadre-tea-router publishing**: Create GitHub repo and publish to npm?
 
 ---
 
