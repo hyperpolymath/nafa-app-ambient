@@ -575,10 +575,10 @@ let view = (model: model): Tea.Html.t<msg> => {
 # Run client and server in parallel
 
 # Build shared types first
-(cd shared && npx rescript build)
+(cd shared && deno task build)
 
 # Start client dev server and server
-(cd client && npx rescript build -w) &
+(cd client && deno task dev) &
 (cd server && deno task dev) &
 
 wait
@@ -586,19 +586,17 @@ wait
 
 **Justfile additions**
 ```just
-# ReScript development
+# ReScript development (Deno-only, no npm/npx)
 rs-build:
-    cd shared && npx rescript build
-    cd client && npx rescript build
-    cd server && npx rescript build
+    cd shared && deno task build
+    cd client && deno task build
 
 rs-dev:
     ./scripts/dev.sh
 
 rs-clean:
-    cd shared && npx rescript clean
-    cd client && npx rescript clean
-    cd server && npx rescript clean
+    cd shared && deno task clean
+    cd client && deno task clean
 ```
 
 ---
@@ -655,14 +653,33 @@ rs-clean:
 ### Client
 ```bash
 cd client
-npm init -y
-npm install rescript rescript-tea @rescript/react react react-dom
+# ReScript compiler (needed for build)
+deno install -g npm:rescript
+
+# Dependencies via deno.json imports (see below)
+```
+
+**client/deno.json**
+```json
+{
+  "imports": {
+    "@cadre/router": "jsr:@cadre/router@^0.1",
+    "@cadre/tea-router": "jsr:@cadre/tea-router@^0.1",
+    "rescript-tea": "npm:rescript-tea@^0.10",
+    "@rescript/core": "npm:@rescript/core@^1.0"
+  },
+  "tasks": {
+    "build": "rescript build",
+    "dev": "rescript build -w",
+    "clean": "rescript clean"
+  }
+}
 ```
 
 ### Server
 ```bash
 cd server
-# Deno manages deps via deno.json imports
+# Deno manages deps via deno.json imports — no install step
 ```
 
 ---
@@ -677,9 +694,11 @@ cd server
    - Client-side only (Parser, Navigation, Link)
    - Server-side is Stage 3 future work
 
-3. **cadre-tea-router**: Needs GitHub repo (currently local only)
+3. **cadre-tea-router**: Publish to JSR as `@cadre/tea-router`
    - Provides `TeaRouter.Make` functor
    - Bridges cadre-router ↔ rescript-tea
+
+4. **Package Registry**: JSR (not npm) — Deno-native, zero-friction
 
 ## Open Questions
 
@@ -688,7 +707,38 @@ cd server
    - React via `@rescript/react` — richer ecosystem
    - Hybrid: Tea.Html for pages, React for complex components
 
-2. **cadre-tea-router publishing**: Create GitHub repo and publish to npm?
+---
+
+## Priority Matrix
+
+> See [INSTRUCTIONS.md](./INSTRUCTIONS.md) for full details and lessons learned.
+
+### MUST (Blockers for nafa-app-ambient)
+
+| Owner | Task |
+|-------|------|
+| cadre-router | Merge branch to main |
+| cadre-router | Publish to JSR as `@cadre/router` |
+| cadre-tea-router | Create repo with `TeaRouter.Make` implementation |
+| cadre-tea-router | Publish to JSR as `@cadre/tea-router` |
+| nafa-app-ambient | Wait for above, then create monorepo structure |
+
+### SHOULD (After MUSTs Complete)
+
+| Owner | Task |
+|-------|------|
+| nafa-app-ambient | Port shared types (Domain, Route, Api) |
+| nafa-app-ambient | Implement Router.res with functor |
+| nafa-app-ambient | Port page modules |
+| All repos | Add test suites |
+
+### COULD (Future)
+
+| Owner | Task |
+|-------|------|
+| cadre-router | Hash navigation variant |
+| cadre-router | Server-side routing (Stage 3) |
+| nafa-app-ambient | CRDT state for real-time features |
 
 ---
 
