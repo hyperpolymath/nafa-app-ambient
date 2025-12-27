@@ -60,40 +60,20 @@ tier contributor name:
 
 # MVP Commands
 mvp-demo:
-    @if command -v deno >/dev/null 2>&1; then \
-        cd server && deno task demo; \
-    else \
-        node server/src/demo-node.js; \
-    fi
+    cd server && deno task demo
 
 mvp-server:
-    @if command -v deno >/dev/null 2>&1; then \
-        cd server && deno task start; \
-    else \
-        echo "Deno required for server. Install: https://deno.land"; \
-    fi
+    cd server && deno task start
 
 mvp-dev:
-    @if command -v deno >/dev/null 2>&1; then \
-        cd server && deno task dev; \
-    else \
-        echo "Deno required for dev server. Install: https://deno.land"; \
-    fi
+    cd server && deno task dev
 
 mvp-build:
-    @if [ -d shared/node_modules ]; then \
-        cd shared && npx rescript build; \
-        cd ../client && npx rescript build; \
-    else \
-        echo "Run 'npm install' in shared/ and client/ first"; \
-    fi
+    cd shared && deno run -A npm:rescript build
+    cd client && deno run -A npm:rescript build
 
 mvp-check:
-    @if command -v deno >/dev/null 2>&1; then \
-        deno check server/src/main.js server/src/demo.js; \
-    else \
-        node --check server/src/demo-node.js; \
-    fi
+    deno check server/src/main.js server/src/demo.js
 
 # Docs & Help
 man:
