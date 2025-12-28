@@ -4,11 +4,19 @@
 # === NAFA Containerfile (Deno Runtime) ===
 #
 # Multi-stage build for the NAFA server.
-# Uses Deno for the runtime - no node_modules needed.
+# Uses Chainguard's Deno image for minimal CVE surface.
+#
+# TODO: Migrate to Cerro Torre (hyperpolymath/cerro-torre) when Phase 1
+#       ships with OCI image output. Cerro Torre provides:
+#       - Provenance-verified packages from democratic governance
+#       - Ada/SPARK tooling with formal verification
+#       - Complete supply-chain transparency
+#       See: https://github.com/hyperpolymath/cerro-torre
 #
 
 # --- Stage 1: Builder ---
-FROM docker.io/denoland/deno:alpine AS builder
+# Chainguard Deno: minimal attack surface, signed images, near-zero CVEs
+FROM cgr.dev/chainguard/deno:latest AS builder
 
 WORKDIR /app
 
@@ -20,14 +28,14 @@ COPY shared/ ./shared/
 RUN cd server && deno cache src/main.js
 
 # --- Stage 2: Runtime ---
-FROM docker.io/denoland/deno:alpine AS runtime
+FROM cgr.dev/chainguard/deno:latest AS runtime
 
 WORKDIR /app
 
 # Copy from builder
 COPY --from=builder /app/server ./server
 COPY --from=builder /app/shared ./shared
-COPY --from=builder /root/.cache/deno /root/.cache/deno
+COPY --from=builder /home/nonroot/.cache/deno /home/nonroot/.cache/deno
 
 # Set environment
 ENV PORT=8080
@@ -36,4 +44,5 @@ ENV PORT=8080
 EXPOSE 8080
 
 # Run with minimal permissions
-CMD ["deno", "run", "--allow-net", "--allow-read", "--allow-env", "server/src/main.js"]
+# Chainguard images run as nonroot by default
+CMD ["run", "--allow-net", "--allow-read", "--allow-env", "server/src/main.js"]
