@@ -1,94 +1,246 @@
-= NAFA – Neurodiverse App for Adventurers
-:toc:
+// SPDX-License-Identifier: MIT OR AGPL-3.0-or-later
+// SPDX-FileCopyrightText: 2025 hyperpolymath
 
-== 🌟 Vision
+= NAFA – Neurodiverse App for Adventurers
+:toc: left
+:toclevels: 3
+:icons: font
+
+== Vision
+
 NAFA is a journey planning app designed to help neurodiverse adventurers navigate public transport and sensory-rich environments with calm, confidence, and symbolic clarity.
 
-We encode emotional logic, contributor rituals, and multisensory guarantees into every module—making NAFA not just a tool, but a companion.
+We encode sensory awareness, accessibility preferences, and offline resilience into every module—making NAFA not just a tool, but a companion.
 
-== 🛠️ Tech Stack
+== Tech Stack
 
 [cols="1,3", options="header"]
 |===
 |Layer |Technology
-|UI |Elm (calm, predictable, neurodiverse-first)
-|Core Logic |ReScript (reversible, paradox-excluding)
-|Backend |Elixir (Phoenix) – real-time routing, badge logic
-|Mobile |Kotlin Multiplatform – ambient overlays, biometric sensing
-|Splash Host |Tauri – native desktop splash, no JS runtime
-|Badge Logic |Nickel Configuration Reporter
-|Routing |GraphHopper + OpenStreetMap
-|Ambient Media |Kotlin/Native + OpenAL or AVFoundation
+
+|*Runtime*
+|Deno – secure, modern JavaScript/TypeScript runtime
+
+|*Client Logic*
+|ReScript – type-safe, compiles to clean JavaScript, TEA pattern
+
+|*Server*
+|Deno HTTP – REST API with JSON responses
+
+|*Mobile*
+|Tauri 2.0 – Rust backend + web UI (iOS/Android)
+
+|*Desktop*
+|Tauri 2.0 – native performance, no Electron bloat
+
+|*Configuration*
+|Nickel – typed configuration language for badge logic
+
+|*Routing Data*
+|GraphHopper + OpenStreetMap (planned)
 |===
 
-== 🧬 Contributor Tiers
-NAFA uses symbolic badge logic to recognise contributors:
+=== Language Policy
 
-* *Initiate*: First calm journey, first mood log
-* *Curator*: Upload ambient track, validate route
-* *Guardian*: Test emergency fallback, integrate bioware
-* *Companion*: Assist adventurers in sensory-rich zones
+Following the https://hyperpolymath.org[Hyperpolymath Standard]:
 
-== 🧿 Ambient Extensions
-NAFA interoperates with edge devices and multisensory environments:
+[cols="1,1", options="header"]
+|===
+|Allowed |Banned
 
-* Haptic feedback via smart wearables
-* Olfactory cues via scent emitters
-* Visual overlays via AR glasses
-* Biometric sensing via Kotlin modules
-* Smart clothing via textile sensors
-* BLE/UWB anchors for calm zone detection
+|ReScript, Rust, Deno, Gleam
+|TypeScript, Node.js, npm, Go
 
-== 🧭 Symbolic Splash Graph
+|JavaScript (Deno APIs only)
+|Python (except SaltStack)
 
-[literal]
-----
-node "Mood Input" --> "Preferences"
-node "Preferences" --> "Route Planner"
-node "Route Planner" --> "Ambient Overlay"
-node "Ambient Overlay" --> "Journey Outcome"
-node "Journey Outcome" --> "Badge Tier"
-node "Badge Tier" --> "Companion Tier"
-----
+|Tauri 2.0, Dioxus (mobile)
+|Kotlin, Swift, React Native, Flutter
+|===
 
-== 📦 Repo Structure
+== Features
 
-[literal]
+=== MVP (Complete)
+
+* *Journey Planning* – Sensory-aware route segments with warnings
+* *Sensory Annotations* – Crowdsourced location data (noise/light/crowd levels)
+* *Accessibility Settings* – Text size, contrast, motion, haptics, screen reader support
+* *Offline Mode* – Cached journeys, sync status, works without internet
+
+=== Planned
+
+* Real-time routing integration
+* Tauri mobile apps (iOS/Android)
+* Haptic feedback via Rust/Tauri plugins
+* AR overlays for calm zone detection
+* Biometric sensing via wearable integration
+
+== Project Structure
+
+[source]
 ----
 nafa-app-ambient/
-├── elm-ui/
-├── rescript-logic/
-├── elixir-backend/
-├── kotlin-modules/
-│   ├── ambient/
-│   ├── routing/
-│   ├── badge/
-│   └── bioware/
-├── nickel-rituals/
-├── tauri-shell/
-├── assets/
-│   ├── audio/
-│   ├── visual/
-│   └── scent/
-├── docs/
-├── tests/
+├── client/                    # ReScript SPA (TEA pattern)
+│   ├── src/
+│   │   ├── Main.res          # App entry point
+│   │   └── Page/
+│   │       ├── JourneyView.res
+│   │       ├── Annotate.res
+│   │       ├── Accessibility.res
+│   │       └── Offline.res
+│   └── rescript.json
+│
+├── server/                    # Deno HTTP server
+│   ├── src/
+│   │   ├── main.js           # REST API
+│   │   └── demo.js           # CLI demo
+│   └── deno.json
+│
+├── shared/                    # Shared domain types
+│   ├── src/
+│   │   ├── Domain.res        # Core types
+│   │   └── Route.res         # Type-safe routing
+│   └── rescript.json
+│
+├── nickel-rituals/            # Badge/tier configuration
+│   ├── badge.ncl
+│   └── tier.ncl
+│
+├── scripts/                   # Build automation
+├── Justfile                   # Task runner
+├── Containerfile              # Deno container build
+└── PLAN.adoc                  # Migration roadmap
 ----
 
-== 🧪 Stretch Goals
-* Multi-user accounts
-* Street-level overlays
-* Bioware integration
-* Third-party app bridges
-* Companion-tier recognition via symbolic badges
+== Quick Start
 
-== 🧠 Licensing & Legacy
-NAFA is released under the AGPL-3.0 license. All symbolic logic, badge transitions, and ambient overlays are designed to be narratable, reversible, and audit-grade.
+[source,bash]
+----
+# Run the CLI demo (shows all features)
+just mvp-demo
 
-== 💬 Contact & Community
-Email:: nafa.app@gmail.com
-Instagram:: @nafa_app
-Twitter:: @nafa_travel
-GitLab:: https://gitlab.com/nafa/ambient-edition
+# Start the API server
+just mvp-server
 
-== 🧭 Join the Journey
-NAFA is a living ritual. Every commit, badge, and ambient module is a step toward calmer, more inclusive travel. Join us.
+# Development mode with watch
+just mvp-dev
+----
+
+=== Requirements
+
+* https://deno.land[Deno] 2.1+
+* https://just.systems[just] (task runner)
+
+== Mobile Strategy
+
+NAFA uses *Rust-first mobile development* via:
+
+=== Tauri 2.0
+
+* Web UI (ReScript) + Rust backend
+* Single codebase for iOS, Android, desktop
+* Native performance, minimal bundle size
+* MIT/Apache-2.0 licensed, no Big Tech dependencies
+
+=== Dioxus (Alternative)
+
+* Pure Rust with React-like syntax
+* Native UI components
+* WASM support for web
+
+Both approaches avoid Kotlin/Swift entirely, keeping the stack unified around Rust.
+
+== Ambient Extensions
+
+NAFA is designed to interoperate with sensory hardware:
+
+* *Haptic Feedback* – Via Rust/Tauri plugins to device APIs
+* *Visual Overlays* – AR glasses integration (future)
+* *BLE Beacons* – Calm zone detection
+* *Wearables* – Heart rate, stress indicators
+
+All integrations use Rust for the native layer, exposed to the ReScript UI via Tauri commands.
+
+== Contributor Tiers
+
+NAFA uses symbolic badge logic to recognise contributors:
+
+[cols="1,3"]
+|===
+|Badge |Criteria
+
+|*Initiate*
+|First calm journey completed
+
+|*Curator*
+|Contributed sensory annotation
+
+|*Guardian*
+|Tested emergency fallback features
+
+|*Companion*
+|Assisted others in sensory-rich zones
+|===
+
+Badge logic is defined in `nickel-rituals/badge.ncl`.
+
+== API Endpoints
+
+[cols="1,1,2", options="header"]
+|===
+|Method |Path |Description
+
+|GET
+|`/api/journey/:id`
+|Retrieve journey by ID
+
+|GET
+|`/api/annotations`
+|List all sensory annotations
+
+|POST
+|`/api/annotation`
+|Create new annotation
+|===
+
+== Development
+
+=== Build Commands
+
+[source,bash]
+----
+just mvp-demo      # Run CLI demo
+just mvp-server    # Start server on :8080
+just mvp-dev       # Server with --watch
+just mvp-build     # Build ReScript modules
+just mvp-check     # Type-check server files
+----
+
+=== Container Build
+
+[source,bash]
+----
+podman build -f Containerfile -t nafa:latest .
+podman run -p 8080:8080 nafa:latest
+----
+
+== Licensing
+
+NAFA is dual-licensed under:
+
+* *MIT* – For maximum flexibility
+* *AGPL-3.0-or-later* – For copyleft protection
+
+All source files include SPDX license headers.
+
+== Links
+
+* Project: https://github.com/hyperpolymath/nafa-app-ambient
+* Issues: https://github.com/hyperpolymath/nafa-app-ambient/issues
+* Hyperpolymath: https://hyperpolymath.org
+
+== Join the Journey
+
+NAFA is a living project. Every commit, annotation, and accessibility improvement is a step toward calmer, more inclusive travel.
+
+Contributions welcome – see link:CONTRIBUTING.md[CONTRIBUTING.md].
