@@ -1,83 +1,33 @@
-# NAFA Ambient Edition Justfile
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Justfile - hyperpolymath standard task runner
 
-# Setup
-init:
-    mix deps.get
-    echo "Initialized NAFA Ambient Edition"
+default:
+    @just --list
 
-config:
-    echo "Configure environment variables and API keys"
+# Build the project
+build:
+    @echo "Building..."
 
-env:
-    echo "GRAPHHOPPER_API_KEY=${GRAPHHOPPER_API_KEY}"
+# Run tests
+test:
+    @echo "Testing..."
 
-# Routing
-route calm from to:
-    elixir -e "MoodRouter.score_route(%{from: {$(from)}, to: {$(to)}, profile: \"foot\"})"
+# Run lints
+lint:
+    @echo "Linting..."
 
-route avoid from to avoid:
-    elixir -e "RouteFilter.avoid(%{from: {$(from)}, to: {$(to)}, avoid: \"$(avoid)\"})"
+# Clean build artifacts
+clean:
+    @echo "Cleaning..."
 
-route multi points:
-    elixir -e "MoodRouter.multi_route($(points))"
+# Format code
+fmt:
+    @echo "Formatting..."
 
-# Overlays
-overlay scent zone mood:
-    elixir -e "AmbientSync.trigger_overlay(%{zone: \"$(zone)\", mood: \"$(mood)\", overlay: :scent})"
+# Run all checks
+check: lint test
 
-overlay haptic zone mood:
-    elixir -e "AmbientSync.trigger_overlay(%{zone: \"$(zone)\", mood: \"$(mood)\", overlay: :haptic})"
+# Prepare a release
+release VERSION:
+    @echo "Releasing {{VERSION}}..."
 
-overlay visual zone mood:
-    elixir -e "AmbientSync.trigger_overlay(%{zone: \"$(zone)\", mood: \"$(mood)\", overlay: :visual})"
-
-# Emergency
-panic location:
-    elixir -e "EmergencyFallback.activate(%{location: \"$(location)\", signal: :panic})"
-
-reroute location:
-    elixir -e "EmergencyFallback.activate(%{location: \"$(location)\", signal: :reroute})"
-
-contact person:
-    echo "Contacting $(person)..."
-
-# Splash
-splash trigger event:
-    elixir -e "SplashTrigger.emit(:$(event))"
-
-splash preview:
-    cat nickel-rituals/splash.graph
-
-splash graph:
-    nickel check nickel-rituals/splash.graph
-
-# Symbolic Rituals
-badge tier:
-    nickel run nickel-rituals/badge.ncl --tier $(tier)
-
-tier contributor name:
-    nickel run nickel-rituals/tier.ncl --contributor $(name)
-
-# MVP Commands
-mvp-demo:
-    cd server && deno task demo
-
-mvp-server:
-    cd server && deno task start
-
-mvp-dev:
-    cd server && deno task dev
-
-mvp-build:
-    cd shared && deno run -A npm:rescript build
-    cd client && deno run -A npm:rescript build
-
-mvp-check:
-    deno check server/src/main.js server/src/demo.js
-
-# Docs & Help
-man:
-    echo "NAFA Ambient Edition Manual: Routing, Overlays, Emergency, Splash, Rituals"
-
-help:
-    echo "Available commands: init, config, env, route calm, route avoid, route multi, overlay scent/haptic/visual, panic, reroute, contact, splash trigger/preview/graph, badge, tier, mvp-demo, mvp-server, mvp-dev, mvp-build, man, help"
