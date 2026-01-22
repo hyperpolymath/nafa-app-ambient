@@ -2,7 +2,7 @@ image:https://img.shields.io/badge/License-MPL_2.0-blue.svg[MPL-2.0,link="https:
 image:https://img.shields.io/badge/Philosophy-Palimpsest-purple.svg[Palimpsest,link="https://github.com/hyperpolymath/palimpsest-licence"]
 
 
-// SPDX-License-Identifier: MIT OR AGPL-3.0-or-later
+// SPDX-License-Identifier: MIT OR PMPL-1.0-or-later
 // SPDX-FileCopyrightText: 2025 hyperpolymath
 
 = NAFA – Neurodiverse App for Adventurers
@@ -234,7 +234,7 @@ podman run -p 8080:8080 nafa:latest
 NAFA is dual-licensed under:
 
 * *MIT* – For maximum flexibility
-* *AGPL-3.0-or-later* – For copyleft protection
+* *PMPL-1.0-or-later* – For copyleft protection
 
 All source files include SPDX license headers.
 
